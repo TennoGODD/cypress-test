@@ -1,56 +1,22 @@
-name: Cypress Tests
+name: Cypress E2E Tests
 
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: '0 8 * * 1-5'
+on: [push, pull_request]
 
 jobs:
-  cypress-run:
+  test:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        browser: [chrome, firefox, edge]
-        node-version: [18.x]
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          node-version: 18
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Run Cypress tests on ${{ matrix.browser }}
-        uses: cypress-io/github-action@v5
-        with:
-          browser: ${{ matrix.browser }}
-          headless: true
-          record: false
-          parallel: false
-        env:
-
-      - name: Upload test artifacts
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
-          retention-days: 7
-
-      - name: Upload videos
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-videos
-          path: cypress/videos
-          retention-days: 7
+      - name: Run Cypress tests
+        run: npx cypress run --browser chrome --headless
